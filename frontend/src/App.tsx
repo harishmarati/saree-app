@@ -1,6 +1,18 @@
 import { useEffect, useState } from 'react';
-import { Container, Typography, Button, Stack, Alert, CircularProgress } from '@mui/material';
+import {
+  Box,
+  Container,
+  Typography,
+  Button,
+  Stack,
+  Alert,
+  CircularProgress,
+  AppBar,
+  Toolbar,
+  Avatar,
+} from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import DiamondIcon from '@mui/icons-material/Diamond';
 import { useAppDispatch, useAppSelector } from './app/hooks';
 import { loadSarees, addSaree, editSaree, removeSaree } from './features/sarees/sareesSlice';
 import { checkSession, logout } from './features/auth/authSlice';
@@ -65,44 +77,59 @@ function App() {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h4" component="h1">
-          Saree Inventory
-        </Typography>
-        <Stack direction="row" spacing={2}>
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+      <AppBar position="static" color="primary" elevation={0}>
+        <Toolbar sx={{ py: 1 }}>
+          <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.15)', width: 36, height: 36, mr: 1.5 }}>
+            <DiamondIcon fontSize="small" />
+          </Avatar>
+          <Typography variant="h6" component="h1" sx={{ flexGrow: 1, fontFamily: "'Playfair Display', serif" }}>
+            Saree Inventory
+          </Typography>
+          <Button
+            variant="outlined"
+            onClick={() => dispatch(logout())}
+            sx={{ borderColor: 'rgba(255,255,255,0.5)', color: 'inherit', '&:hover': { borderColor: 'white' } }}
+          >
+            Log out
+          </Button>
+        </Toolbar>
+      </AppBar>
+
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+          <Typography variant="body1" color="text.secondary">
+            {items.length} saree{items.length === 1 ? '' : 's'} in your collection
+          </Typography>
           <Button variant="contained" startIcon={<AddIcon />} onClick={handleAddClick}>
             Add Saree
           </Button>
-          <Button variant="outlined" onClick={() => dispatch(logout())}>
-            Log out
-          </Button>
         </Stack>
-      </Stack>
 
-      {status === 'loading' && (
-        <Stack sx={{ alignItems: 'center', mt: 4 }}>
-          <CircularProgress />
-        </Stack>
-      )}
+        {status === 'loading' && (
+          <Stack sx={{ alignItems: 'center', mt: 4 }}>
+            <CircularProgress />
+          </Stack>
+        )}
 
-      {status === 'failed' && (
-        <Alert severity="error" sx={{ mt: 2 }}>
-          {error ?? 'Failed to load sarees'}
-        </Alert>
-      )}
+        {status === 'failed' && (
+          <Alert severity="error" sx={{ mt: 2 }}>
+            {error ?? 'Failed to load sarees'}
+          </Alert>
+        )}
 
-      {status === 'succeeded' && (
-        <SareeTable sarees={items} onEdit={handleEditClick} onDelete={handleDeleteClick} />
-      )}
+        {status === 'succeeded' && (
+          <SareeTable sarees={items} onEdit={handleEditClick} onDelete={handleDeleteClick} />
+        )}
 
-      <SareeFormDialog
-        open={dialogOpen}
-        saree={editingSaree}
-        onClose={() => setDialogOpen(false)}
-        onSubmit={handleSubmit}
-      />
-    </Container>
+        <SareeFormDialog
+          open={dialogOpen}
+          saree={editingSaree}
+          onClose={() => setDialogOpen(false)}
+          onSubmit={handleSubmit}
+        />
+      </Container>
+    </Box>
   );
 }
 

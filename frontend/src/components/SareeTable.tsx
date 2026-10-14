@@ -26,14 +26,21 @@ export function SareeTable({ sarees, onEdit, onDelete }: SareeTableProps) {
   const [previewImage, setPreviewImage] = useState<{ url: string; name: string } | null>(null);
 
   if (sarees.length === 0) {
-    return <Typography sx={{ mt: 4 }}>No sarees yet. Add one to get started.</Typography>;
+    return (
+      <Paper
+        variant="outlined"
+        sx={{ mt: 2, py: 8, textAlign: 'center', borderRadius: 3, borderStyle: 'dashed' }}
+      >
+        <Typography color="text.secondary">No sarees yet. Add one to get started.</Typography>
+      </Paper>
+    );
   }
 
   return (
-    <TableContainer component={Paper} sx={{ mt: 2 }}>
+    <TableContainer component={Paper} elevation={0} variant="outlined" sx={{ mt: 2, borderRadius: 3 }}>
       <Table>
         <TableHead>
-          <TableRow>
+          <TableRow sx={{ '& th': { fontWeight: 600, bgcolor: 'background.default' } }}>
             <TableCell>Image</TableCell>
             <TableCell>Name</TableCell>
             <TableCell>Description</TableCell>
@@ -65,7 +72,9 @@ export function SareeTable({ sarees, onEdit, onDelete }: SareeTableProps) {
               <TableCell align="right">{saree.additionalCharges.toFixed(2)}</TableCell>
               <TableCell align="right">{saree.marginPercentage}</TableCell>
               <TableCell align="right">
-                <strong>{saree.finalPrice.toFixed(2)}</strong>
+                <Typography component="span" sx={{ fontWeight: 700, color: 'primary.main' }}>
+                  {saree.finalPrice.toFixed(2)}
+                </Typography>
               </TableCell>
               <TableCell>{new Date(saree.updatedAt).toLocaleString()}</TableCell>
               <TableCell align="right">
