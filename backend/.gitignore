@@ -1,0 +1,8 @@
+node_modules/
+dist/
+saree.db
+saree.db-journal
+saree.db-wal
+saree.db-shm
+*.log
+.env
