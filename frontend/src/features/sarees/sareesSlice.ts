@@ -1,5 +1,7 @@
 import { createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import * as api from './api';
+import { SessionExpiredError } from './api';
+import { sessionExpired } from '../auth/authSlice';
 import type { Saree, SareeInput } from './types';
 
 interface SareesState {
@@ -14,17 +16,33 @@ const initialState: SareesState = {
   error: null,
 };
 
-export const loadSarees = createAsyncThunk('sarees/load', () => api.fetchSarees());
+async function withSessionGuard<T>(dispatch: (action: unknown) => unknown, fn: () => Promise<T>): Promise<T> {
+  try {
+    return await fn();
+  } catch (err) {
+    if (err instanceof SessionExpiredError) {
+      dispatch(sessionExpired());
+    }
+    throw err;
+  }
+}
 
-export const addSaree = createAsyncThunk('sarees/add', (input: SareeInput) => api.createSaree(input));
+export const loadSarees = createAsyncThunk('sarees/load', (_: void, { dispatch }) =>
+  withSessionGuard(dispatch, () => api.fetchSarees())
+);
+
+export const addSaree = createAsyncThunk('sarees/add', (input: SareeInput, { dispatch }) =>
+  withSessionGuard(dispatch, () => api.createSaree(input))
+);
 
 export const editSaree = createAsyncThunk(
   'sarees/edit',
-  ({ id, input }: { id: number; input: SareeInput }) => api.updateSaree(id, input)
+  ({ id, input }: { id: number; input: SareeInput }, { dispatch }) =>
+    withSessionGuard(dispatch, () => api.updateSaree(id, input))
 );
 
-export const removeSaree = createAsyncThunk('sarees/remove', async (id: number) => {
-  await api.deleteSaree(id);
+export const removeSaree = createAsyncThunk('sarees/remove', async (id: number, { dispatch }) => {
+  await withSessionGuard(dispatch, () => api.deleteSaree(id));
   return id;
 });
 

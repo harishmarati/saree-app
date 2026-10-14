@@ -3,20 +3,41 @@ import { Container, Typography, Button, Stack, Alert, CircularProgress } from '@
 import AddIcon from '@mui/icons-material/Add';
 import { useAppDispatch, useAppSelector } from './app/hooks';
 import { loadSarees, addSaree, editSaree, removeSaree } from './features/sarees/sareesSlice';
+import { checkSession, logout } from './features/auth/authSlice';
 import { SareeTable } from './components/SareeTable';
 import { SareeFormDialog } from './components/SareeFormDialog';
+import { LoginPage } from './components/LoginPage';
 import type { Saree, SareeInput } from './features/sarees/types';
 
 function App() {
   const dispatch = useAppDispatch();
+  const authStatus = useAppSelector((state) => state.auth.status);
   const { items, status, error } = useAppSelector((state) => state.sarees);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingSaree, setEditingSaree] = useState<Saree | null>(null);
 
   useEffect(() => {
-    dispatch(loadSarees());
+    dispatch(checkSession());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (authStatus === 'authenticated') {
+      dispatch(loadSarees());
+    }
+  }, [authStatus, dispatch]);
+
+  if (authStatus === 'checking') {
+    return (
+      <Stack sx={{ alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+        <CircularProgress />
+      </Stack>
+    );
+  }
+
+  if (authStatus === 'unauthenticated') {
+    return <LoginPage />;
+  }
 
   function handleAddClick() {
     setEditingSaree(null);
@@ -49,9 +70,14 @@ function App() {
         <Typography variant="h4" component="h1">
           Saree Inventory
         </Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={handleAddClick}>
-          Add Saree
-        </Button>
+        <Stack direction="row" spacing={2}>
+          <Button variant="contained" startIcon={<AddIcon />} onClick={handleAddClick}>
+            Add Saree
+          </Button>
+          <Button variant="outlined" onClick={() => dispatch(logout())}>
+            Log out
+          </Button>
+        </Stack>
       </Stack>
 
       {status === 'loading' && (

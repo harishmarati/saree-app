@@ -18,6 +18,12 @@ finalPrice = landedCost * (1 + marginPercentage / 100)
 `finalPrice` is computed server-side on every create/update and stored alongside
 `createdAt` / `updatedAt` timestamps.
 
+## Authentication
+
+Single shared password (no per-user accounts, since this is a personal single-admin app).
+Logging in at `/api/auth/login` sets an httpOnly session cookie (JWT, 30-day expiry);
+`/api/sarees/*` requires it. Required env vars: `ADMIN_PASSWORD`, `JWT_SECRET`.
+
 ## Running locally
 
 Backend (http://localhost:4000). With no `.env` file, it uses a local SQLite file
@@ -68,6 +74,9 @@ Either way, set these environment variables on the Render service:
 - `TURSO_DATABASE_URL` — the `libsql://...` URL from step 1
 - `TURSO_AUTH_TOKEN` — the token from step 1
 - `CORS_ORIGIN` — your Vercel URL once you have it (step 3); comma-separate multiple origins
+- `ADMIN_PASSWORD` — the password you'll use to log into the app
+- `JWT_SECRET` — a random secret for signing session tokens, e.g. generate with
+  `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
 
 Render's free tier spins down after ~15 minutes idle, so the first request after a
 lull takes a few seconds to wake up.
