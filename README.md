@@ -86,6 +86,22 @@ Set the environment variable:
 Then go back to Render and set `CORS_ORIGIN` to your Vercel URL so the backend accepts
 requests from it.
 
+### 4. Image uploads — Cloudinary (optional)
+
+The app only stores an `imageUrl` string — no image bytes touch the backend or database.
+To upload saree photos directly from the form instead of hosting them yourself:
+
+1. Sign up at https://cloudinary.com (free tier).
+2. On the dashboard, note your **Cloud name**.
+3. Go to **Settings → Upload → Upload presets**, add a new preset, and set its
+   **Signing Mode** to **Unsigned** (required for browser-side uploads without a backend).
+4. Set these on Vercel (and in `frontend/.env` for local dev):
+   - `VITE_CLOUDINARY_CLOUD_NAME`
+   - `VITE_CLOUDINARY_UPLOAD_PRESET`
+
+Without these set, the "Upload" button in the form is disabled and you can still paste
+an image URL manually.
+
 ## API
 
 | Method | Path              | Description          |

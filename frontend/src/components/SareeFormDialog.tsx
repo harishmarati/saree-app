@@ -8,9 +8,14 @@ import {
   Button,
   Stack,
   Typography,
+  Avatar,
+  CircularProgress,
+  Alert,
 } from '@mui/material';
+import UploadIcon from '@mui/icons-material/Upload';
 import type { Saree, SareeInput } from '../features/sarees/types';
 import { calculateFinalPrice } from '../features/sarees/pricing';
+import { isCloudinaryConfigured, uploadImageToCloudinary } from '../features/sarees/cloudinary';
 
 const emptyForm: SareeInput = {
   name: '',
@@ -31,6 +36,8 @@ interface SareeFormDialogProps {
 
 export function SareeFormDialog({ open, saree, onClose, onSubmit }: SareeFormDialogProps) {
   const [form, setForm] = useState<SareeInput>(emptyForm);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   useEffect(() => {
     if (saree) {
@@ -39,6 +46,7 @@ export function SareeFormDialog({ open, saree, onClose, onSubmit }: SareeFormDia
     } else {
       setForm(emptyForm);
     }
+    setUploadError(null);
   }, [saree, open]);
 
   const previewFinalPrice = calculateFinalPrice(
@@ -52,6 +60,20 @@ export function SareeFormDialog({ open, saree, onClose, onSubmit }: SareeFormDia
 
   function handleChange<K extends keyof SareeInput>(key: K, value: SareeInput[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
+  }
+
+  async function handleFileSelected(file: File | undefined) {
+    if (!file) return;
+    setUploading(true);
+    setUploadError(null);
+    try {
+      const url = await uploadImageToCloudinary(file);
+      handleChange('imageUrl', url);
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : 'Image upload failed');
+    } finally {
+      setUploading(false);
+    }
   }
 
   function handleSubmit() {
@@ -79,12 +101,39 @@ export function SareeFormDialog({ open, saree, onClose, onSubmit }: SareeFormDia
             minRows={2}
             fullWidth
           />
-          <TextField
-            label="Image URL"
-            value={form.imageUrl}
-            onChange={(e) => handleChange('imageUrl', e.target.value)}
-            fullWidth
-          />
+          <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
+            <Avatar src={form.imageUrl} variant="rounded" sx={{ width: 56, height: 56 }} />
+            <TextField
+              label="Image URL"
+              value={form.imageUrl}
+              onChange={(e) => handleChange('imageUrl', e.target.value)}
+              fullWidth
+            />
+            <Button
+              component="label"
+              variant="outlined"
+              startIcon={uploading ? <CircularProgress size={16} /> : <UploadIcon />}
+              disabled={!isCloudinaryConfigured || uploading}
+              sx={{ whiteSpace: 'nowrap' }}
+            >
+              Upload
+              <input
+                hidden
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  void handleFileSelected(e.target.files?.[0]);
+                  e.target.value = '';
+                }}
+              />
+            </Button>
+          </Stack>
+          {!isCloudinaryConfigured && (
+            <Typography variant="caption" color="text.secondary">
+              Set VITE_CLOUDINARY_CLOUD_NAME and VITE_CLOUDINARY_UPLOAD_PRESET to enable image upload.
+            </Typography>
+          )}
+          {uploadError && <Alert severity="error">{uploadError}</Alert>}
           <Stack direction="row" spacing={2}>
             <TextField
               label="Original Price"
