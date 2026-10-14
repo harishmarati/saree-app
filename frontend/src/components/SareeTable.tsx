@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   Avatar,
   IconButton,
@@ -9,6 +10,7 @@ import {
   TableRow,
   Paper,
   Typography,
+  Dialog,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -21,6 +23,8 @@ interface SareeTableProps {
 }
 
 export function SareeTable({ sarees, onEdit, onDelete }: SareeTableProps) {
+  const [previewImage, setPreviewImage] = useState<{ url: string; name: string } | null>(null);
+
   if (sarees.length === 0) {
     return <Typography sx={{ mt: 4 }}>No sarees yet. Add one to get started.</Typography>;
   }
@@ -46,7 +50,13 @@ export function SareeTable({ sarees, onEdit, onDelete }: SareeTableProps) {
           {sarees.map((saree) => (
             <TableRow key={saree.id} hover>
               <TableCell>
-                <Avatar src={saree.imageUrl} variant="rounded" alt={saree.name} />
+                <Avatar
+                  src={saree.imageUrl}
+                  variant="rounded"
+                  alt={saree.name}
+                  onClick={() => saree.imageUrl && setPreviewImage({ url: saree.imageUrl, name: saree.name })}
+                  sx={{ cursor: saree.imageUrl ? 'pointer' : 'default' }}
+                />
               </TableCell>
               <TableCell>{saree.name}</TableCell>
               <TableCell sx={{ maxWidth: 240 }}>{saree.description}</TableCell>
@@ -70,6 +80,15 @@ export function SareeTable({ sarees, onEdit, onDelete }: SareeTableProps) {
           ))}
         </TableBody>
       </Table>
+      <Dialog open={previewImage !== null} onClose={() => setPreviewImage(null)} maxWidth="md">
+        {previewImage && (
+          <img
+            src={previewImage.url}
+            alt={previewImage.name}
+            style={{ display: 'block', maxWidth: '100%', maxHeight: '85vh' }}
+          />
+        )}
+      </Dialog>
     </TableContainer>
   );
 }
