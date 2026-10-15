@@ -1,5 +1,5 @@
 import { Router, type Request, type Response } from "express";
-import { SESSION_COOKIE, getAdminPassword, safeCompare, signSessionToken, verifySessionToken } from "../auth.js";
+import { extractToken, SESSION_COOKIE, getAdminPassword, safeCompare, signSessionToken, verifySessionToken } from "../auth.js";
 
 export const authRouter = Router();
 
@@ -26,7 +26,7 @@ authRouter.post("/login", (req: Request, res: Response) => {
     ...cookieOptions(req),
     maxAge: 30 * 24 * 60 * 60 * 1000,
   });
-  res.json({ ok: true });
+  res.json({ ok: true, token });
 });
 
 authRouter.post("/logout", (req: Request, res: Response) => {
@@ -35,8 +35,8 @@ authRouter.post("/logout", (req: Request, res: Response) => {
 });
 
 authRouter.get("/me", (req: Request, res: Response) => {
-  const token = req.cookies?.[SESSION_COOKIE];
-  if (typeof token === "string" && verifySessionToken(token)) {
+  const token = extractToken(req);
+  if (token && verifySessionToken(token)) {
     res.json({ authenticated: true });
     return;
   }

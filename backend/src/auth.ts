@@ -3,6 +3,15 @@ import jwt from "jsonwebtoken";
 
 export const SESSION_COOKIE = "saree_session";
 
+// Accepts the Bearer header (works on mobile browsers that block cross-site
+// cookies) or falls back to the session cookie.
+export function extractToken(req: { headers: { authorization?: string }; cookies?: Record<string, unknown> }): string | null {
+  const header = req.headers.authorization;
+  if (header?.startsWith("Bearer ")) return header.slice(7);
+  const cookie = req.cookies?.[SESSION_COOKIE];
+  return typeof cookie === "string" ? cookie : null;
+}
+
 function requiredEnv(name: string): string {
   const value = process.env[name];
   if (!value) {

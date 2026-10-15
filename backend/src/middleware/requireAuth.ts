@@ -1,9 +1,9 @@
 import type { Request, Response, NextFunction } from "express";
-import { SESSION_COOKIE, verifySessionToken } from "../auth.js";
+import { extractToken, verifySessionToken } from "../auth.js";
 
 export function requireAuth(req: Request, res: Response, next: NextFunction): void {
-  const token = req.cookies?.[SESSION_COOKIE];
-  if (typeof token === "string" && verifySessionToken(token)) {
+  const token = extractToken(req);
+  if (token && verifySessionToken(token)) {
     next();
     return;
   }
