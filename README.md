@@ -11,7 +11,7 @@ original price, exchange rate, additional charges, margin %, and the computed fi
 ## Pricing formula
 
 ```
-landedCost = originalPrice * exchangeRate + additionalCharges
+landedCost = (originalPrice + additionalCharges) / exchangeRate   # INR -> AUD
 finalPrice = landedCost * (1 + marginPercentage / 100)
 ```
 

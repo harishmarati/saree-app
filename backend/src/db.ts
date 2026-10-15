@@ -1,4 +1,5 @@
 import { createClient } from "@libsql/client";
+import { calculateFinalPrice } from "./pricing.js";
 
 export const db = createClient({
   url: process.env.TURSO_DATABASE_URL ?? "file:./saree.db",
@@ -21,4 +22,18 @@ export async function initDb(): Promise<void> {
       updatedAt TEXT NOT NULL
     )
   `);
+
+  // Final price formula changed to (original + charges) / rate; recompute stored rows.
+  const rows = await db.execute("SELECT id, originalPrice, exchangeRate, additionalCharges, marginPercentage, finalPrice FROM sarees");
+  for (const r of rows.rows) {
+    const price = calculateFinalPrice(
+      Number(r.originalPrice),
+      Number(r.exchangeRate),
+      Number(r.additionalCharges),
+      Number(r.marginPercentage)
+    );
+    if (price !== Number(r.finalPrice)) {
+      await db.execute({ sql: "UPDATE sarees SET finalPrice = ? WHERE id = ?", args: [price, Number(r.id)] });
+    }
+  }
 }

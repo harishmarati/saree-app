@@ -16,6 +16,11 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import type { Saree } from '../features/sarees/types';
 
+const inr = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' });
+const aud = new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' });
+const formatInr = (n: number) => inr.format(n);
+const formatAud = (n: number) => aud.format(n);
+
 interface SareeTableProps {
   sarees: Saree[];
   onEdit: (saree: Saree) => void;
@@ -44,11 +49,11 @@ export function SareeTable({ sarees, onEdit, onDelete }: SareeTableProps) {
             <TableCell>Image</TableCell>
             <TableCell>Name</TableCell>
             <TableCell>Description</TableCell>
-            <TableCell align="right">Original Price</TableCell>
-            <TableCell align="right">Exchange Rate</TableCell>
-            <TableCell align="right">Additional Charges</TableCell>
+            <TableCell align="right">Original Price (₹)</TableCell>
+            <TableCell align="right">Exchange Rate (₹/A$)</TableCell>
+            <TableCell align="right">Additional Charges (₹)</TableCell>
             <TableCell align="right">Margin (%)</TableCell>
-            <TableCell align="right">Final Price</TableCell>
+            <TableCell align="right">Final Price (A$)</TableCell>
             <TableCell>Updated</TableCell>
             <TableCell align="right">Actions</TableCell>
           </TableRow>
@@ -67,17 +72,17 @@ export function SareeTable({ sarees, onEdit, onDelete }: SareeTableProps) {
               </TableCell>
               <TableCell>{saree.name}</TableCell>
               <TableCell sx={{ maxWidth: 240 }}>{saree.description}</TableCell>
-              <TableCell align="right">{saree.originalPrice.toFixed(2)}</TableCell>
+              <TableCell align="right">{formatInr(saree.originalPrice)}</TableCell>
               <TableCell align="right">{saree.exchangeRate}</TableCell>
-              <TableCell align="right">{saree.additionalCharges.toFixed(2)}</TableCell>
+              <TableCell align="right">{formatInr(saree.additionalCharges)}</TableCell>
               <TableCell align="right">{saree.marginPercentage}</TableCell>
               <TableCell align="right">
                 <Typography component="span" sx={{ fontWeight: 700, color: 'primary.main' }}>
-                  {saree.finalPrice.toFixed(2)}
+                  {formatAud(saree.finalPrice)}
                 </Typography>
               </TableCell>
               <TableCell>{new Date(saree.updatedAt).toLocaleString()}</TableCell>
-              <TableCell align="right">
+              <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
                 <IconButton size="small" onClick={() => onEdit(saree)} aria-label="edit">
                   <EditIcon fontSize="small" />
                 </IconButton>

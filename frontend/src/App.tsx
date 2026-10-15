@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Box,
   Container,
@@ -10,8 +10,11 @@ import {
   AppBar,
   Toolbar,
   Avatar,
+  TextField,
+  InputAdornment,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import SearchIcon from '@mui/icons-material/Search';
 import DiamondIcon from '@mui/icons-material/Diamond';
 import { useAppDispatch, useAppSelector } from './app/hooks';
 import { loadSarees, addSaree, editSaree, removeSaree } from './features/sarees/sareesSlice';
@@ -28,6 +31,24 @@ function App() {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingSaree, setEditingSaree] = useState<Saree | null>(null);
+
+  const [query, setQuery] = useState('');
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+
+  const filteredItems = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const min = minPrice === '' ? null : Number(minPrice);
+    const max = maxPrice === '' ? null : Number(maxPrice);
+    return items.filter((s) => {
+      if (q && !s.name.toLowerCase().includes(q) && !s.description.toLowerCase().includes(q)) return false;
+      if (min !== null && Number.isFinite(min) && s.finalPrice < min) return false;
+      if (max !== null && Number.isFinite(max) && s.finalPrice > max) return false;
+      return true;
+    });
+  }, [items, query, minPrice, maxPrice]);
+
+  const isFiltering = query.trim() !== '' || minPrice !== '' || maxPrice !== '';
 
   useEffect(() => {
     dispatch(checkSession());
@@ -99,11 +120,48 @@ function App() {
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
           <Typography variant="body1" color="text.secondary">
-            {items.length} saree{items.length === 1 ? '' : 's'} in your collection
+            {isFiltering ? `${filteredItems.length} of ${items.length}` : items.length} saree
+            {(isFiltering ? filteredItems.length : items.length) === 1 ? '' : 's'}
+            {isFiltering ? ' match' : ' in your collection'}
           </Typography>
           <Button variant="contained" startIcon={<AddIcon />} onClick={handleAddClick}>
             Add Saree
           </Button>
+        </Stack>
+
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 2 }}>
+          <TextField
+            size="small"
+            placeholder="Search name or description"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            sx={{ flexGrow: 1 }}
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon fontSize="small" />
+                  </InputAdornment>
+                ),
+              },
+            }}
+          />
+          <TextField
+            size="small"
+            type="number"
+            label="Price above (>)"
+            value={minPrice}
+            onChange={(e) => setMinPrice(e.target.value)}
+            sx={{ width: { sm: 160 } }}
+          />
+          <TextField
+            size="small"
+            type="number"
+            label="Price below (<)"
+            value={maxPrice}
+            onChange={(e) => setMaxPrice(e.target.value)}
+            sx={{ width: { sm: 160 } }}
+          />
         </Stack>
 
         {status === 'loading' && (
@@ -119,7 +177,7 @@ function App() {
         )}
 
         {status === 'succeeded' && (
-          <SareeTable sarees={items} onEdit={handleEditClick} onDelete={handleDeleteClick} />
+          <SareeTable sarees={filteredItems} onEdit={handleEditClick} onDelete={handleDeleteClick} />
         )}
 
         <SareeFormDialog

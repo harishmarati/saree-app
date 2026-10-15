@@ -136,14 +136,14 @@ export function SareeFormDialog({ open, saree, onClose, onSubmit }: SareeFormDia
           {uploadError && <Alert severity="error">{uploadError}</Alert>}
           <Stack direction="row" spacing={2}>
             <TextField
-              label="Original Price"
+              label="Original Price (₹)"
               type="number"
               value={form.originalPrice}
               onChange={(e) => handleChange('originalPrice', Number(e.target.value))}
               fullWidth
             />
             <TextField
-              label="Exchange Rate"
+              label="Exchange Rate (₹ per A$)"
               type="number"
               value={form.exchangeRate}
               onChange={(e) => handleChange('exchangeRate', Number(e.target.value))}
@@ -152,7 +152,7 @@ export function SareeFormDialog({ open, saree, onClose, onSubmit }: SareeFormDia
           </Stack>
           <Stack direction="row" spacing={2}>
             <TextField
-              label="Additional Charges"
+              label="Additional Charges (₹)"
               type="number"
               value={form.additionalCharges}
               onChange={(e) => handleChange('additionalCharges', Number(e.target.value))}
@@ -167,7 +167,7 @@ export function SareeFormDialog({ open, saree, onClose, onSubmit }: SareeFormDia
             />
           </Stack>
           <Typography variant="subtitle1">
-            Final Price: {previewFinalPrice.toFixed(2)}
+            Final Price: A${previewFinalPrice.toFixed(2)}
           </Typography>
         </Stack>
       </DialogContent>
